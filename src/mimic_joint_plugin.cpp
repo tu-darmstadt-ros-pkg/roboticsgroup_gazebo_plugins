@@ -85,18 +85,18 @@ void MimicJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   
   mimic_joint_name_ = _sdf->GetElement("mimicJoint")->Get<std::string>();
 
-  has_pid_ = false;
+  has_pid_ = true;
   // Check if PID controller wanted
-  if(_sdf->HasElement("hasPID"))
+  //if(_sdf->HasElement("hasPID"))
   {
     has_pid_ = true;
 
     const ros::NodeHandle nh(model_nh, std::string(robot_namespace_+"/gazebo_ros_control/pid_gains/")+mimic_joint_name_);
     double p, i,d ;
     // TO-DO: include i_clamp e.t.c.
-    nh.param("p", p, 0.0);
+    nh.param("p", p, 50.0);
     nh.param("i", i, 0.0);
-    nh.param("d", d, 0.0);
+    nh.param("d", d, 0.2);
 
     pid_ = control_toolbox::Pid(p,i,d);
   }
@@ -117,7 +117,7 @@ void MimicJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
     sensitiveness_ = _sdf->GetElement("sensitiveness")->Get<double>();
 
   // Check for max effort
-  max_effort_ = 1.0;
+  max_effort_ = 1000.0;
   if (_sdf->HasElement("maxEffort"))
   {
     max_effort_ = _sdf->GetElement("maxEffort")->Get<double>();
@@ -159,10 +159,11 @@ void MimicJointPlugin::UpdateChild()
     if(has_pid_)
     {
       double a = mimic_joint_->GetAngle(0).Radian();
-      if(a!=a)
-        a = angle;
+      //if(a!=a)
+      //  a = angle;
       double error = angle-a;
       double effort = gazebo::math::clamp(pid_.computeCommand(error, period), -max_effort_, max_effort_);
+      //ROS_INFO("Angle joint: %f , angle mimic joint: %f , effort: %f", angle, a, effort);
       mimic_joint_->SetForce(0, effort);
     }
     else
