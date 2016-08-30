@@ -19,6 +19,8 @@ catkin_package(
     control_toolbox
 )
 
+add_definitions(-std=gnu++0x)
+
 link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS} include)
 
