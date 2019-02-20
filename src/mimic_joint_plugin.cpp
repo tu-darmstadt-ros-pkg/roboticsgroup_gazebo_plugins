@@ -85,6 +85,13 @@ void MimicJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   
   mimic_joint_name_ = _sdf->GetElement("mimicJoint")->Get<std::string>();
 
+  if(_sdf->HasElement("feedbackJoint"))
+  {
+    feedback_joint_name_ = _sdf->GetElement("feedbackJoint")->Get<std::string>();
+  } else {
+    feedback_joint_name_ = "";
+  }
+
   has_pid_ = false;
   // Check if PID controller wanted
   if(_sdf->HasElement("hasPID"))
@@ -136,7 +143,10 @@ void MimicJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
     ROS_ERROR("No (mimic) joint named %s. MimicJointPlugin could not be loaded.", mimic_joint_name_.c_str());
     return;
   }
-  
+  if (feedback_joint_name_ != "") {
+    feedback_joint_ = model_->GetJoint(feedback_joint_name_);
+  }
+
   // Set max effort
   if(!has_pid_)
     mimic_joint_->SetEffortLimit(0,max_effort_);
@@ -154,7 +164,7 @@ void MimicJointPlugin::UpdateChild()
   // Set mimic joint's angle based on joint's angle
   double angle = joint_->GetAngle(0).Radian()*multiplier_+offset_;
   
-  if(abs(angle-mimic_joint_->GetAngle(0).Radian())>=sensitiveness_)
+  if(std::abs(angle-mimic_joint_->GetAngle(0).Radian())>=sensitiveness_)
   {
     if(has_pid_)
     {
@@ -167,6 +177,12 @@ void MimicJointPlugin::UpdateChild()
     }
     else
       mimic_joint_->SetPosition(0, angle);
+  }
+
+  if (feedback_joint_) {
+    double feedback_angle = (mimic_joint_->Position(0) - offset_) / multiplier_;
+//    std::cout << "[MimicJointPlugin] " << joint_name_ << " --> " << mimic_joint_name_ << "; Position feedback: " << feedback_angle << std::endl;
+    feedback_joint_->SetPosition(0, feedback_angle);
   }
 }
 

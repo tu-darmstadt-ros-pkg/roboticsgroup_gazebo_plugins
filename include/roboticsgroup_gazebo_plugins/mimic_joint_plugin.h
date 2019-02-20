@@ -51,7 +51,7 @@ namespace gazebo
 
     private:
       // Parameters
-      std::string joint_name_, mimic_joint_name_, robot_namespace_;
+      std::string joint_name_, mimic_joint_name_, feedback_joint_name_, robot_namespace_;
       double multiplier_, offset_, sensitiveness_, max_effort_;
       bool has_pid_;
 
@@ -61,7 +61,7 @@ namespace gazebo
       control_toolbox::Pid pid_;
 
       // Pointers to the joints
-      physics::JointPtr joint_, mimic_joint_;
+      physics::JointPtr joint_, mimic_joint_, feedback_joint_;
 
       // Pointer to the model
       physics::ModelPtr model_;
