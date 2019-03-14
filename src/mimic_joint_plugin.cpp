@@ -98,14 +98,17 @@ void MimicJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf )
   {
     has_pid_ = true;
 
-    const ros::NodeHandle nh(model_nh, std::string(robot_namespace_+"/gazebo_ros_control/pid_gains/")+mimic_joint_name_);
+    ros::NodeHandle nh(model_nh, std::string(robot_namespace_+"/gazebo_ros_control/pid_gains/")+mimic_joint_name_);
     double p, i,d ;
     // TO-DO: include i_clamp e.t.c.
     nh.param("p", p, 0.0);
     nh.param("i", i, 0.0);
     nh.param("d", d, 0.0);
 
-    pid_ = control_toolbox::Pid(p,i,d);
+//    pid_ = control_toolbox::Pid(p,i,d);
+    pid_ = control_toolbox::Pid();
+    pid_.setGains(p, i, d, 0.0, 0.0, false);
+    pid_.initDynamicReconfig(nh);
   }
 
   // Check for multiplier element
